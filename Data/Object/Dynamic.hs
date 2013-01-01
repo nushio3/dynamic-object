@@ -13,12 +13,18 @@ newtype Object = Object (Map.Map TypeRep Dynamic)
   deriving (Typeable)
 
 instance Show Object where
-  show (Object x) = show x
+  show (Object x) = ("Object"++) $ drop 8 $ show x
 
 class Typeable a => KeyType a where
   type ValType a :: *
 
 type Record kt = Lens Object Object (Maybe (ValType kt)) (Maybe (ValType kt))
+
+-- | an empty @Object@ .
+--
+-- >>> empty
+-- Object []
+
 
 empty :: Object
 empty = Object $ Map.empty
