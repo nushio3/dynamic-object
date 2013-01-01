@@ -5,9 +5,11 @@
 {-# LANGUAGE TypeFamilies #-}
 module Data.Object.Dynamic.Types where
 
-import qualified Data.Map as Map
-import           Data.Dynamic
+import           Control.Applicative ((<|>))
 import           Control.Lens
+import           Data.Dynamic
+import qualified Data.Map as Map
+
 
 -- | A basic object type that can contain values of
 --   different types.
@@ -49,6 +51,35 @@ mkMember k1 = lens gettr settr
   where
     gettr :: Object -> Maybe (ValType kt)
     gettr (Object map0) = Map.lookup k map0 >>= fromDynamic
+    settr :: Object -> (Maybe (ValType kt)) -> Object
+    settr (Object map0) Nothing  = Object $ Map.delete k map0
+    settr (Object map0) (Just x) = Object $ Map.insert k (toDyn x) map0
+    k :: TypeRep
+    k = typeOf k1
+
+
+-- | Create a 'Member' 'Lens' with a default value.
+--   Here's a price tag for objects with default value.
+--
+-- >>> data Price = Price deriving (Show, Typeable)
+-- >>> instance KeyType Price where type ValType Price = Integer
+-- >>> let price :: Member Price; price = mkMemberWithDef Price 10;
+-- >>> let x = set price (Just 120) empty
+-- >>> view price empty
+-- Just 10
+-- >>> view price x
+-- Just 120
+
+mkMemberWithDef ::
+  forall kt. (KeyType kt, Typeable (ValType kt)) =>
+  kt ->
+  ValType kt ->
+  Member kt
+mkMemberWithDef k1 v1 = lens gettr settr
+  where
+    gettr :: Object -> Maybe (ValType kt)
+    gettr (Object map0) = (Map.lookup k map0 >>= fromDynamic)
+                           <|> Just v1
     settr :: Object -> (Maybe (ValType kt)) -> Object
     settr (Object map0) Nothing  = Object $ Map.delete k map0
     settr (Object map0) (Just x) = Object $ Map.insert k (toDyn x) map0
