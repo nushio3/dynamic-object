@@ -9,7 +9,7 @@ import qualified Data.Map as Map
 import           Data.Dynamic
 import           Control.Lens
 
--- | A basic object type that can contain values of 
+-- | A basic object type that can contain values of
 --   different types.
 newtype Object = Object (Map.Map TypeRep Dynamic)
   deriving (Typeable)
@@ -20,20 +20,32 @@ instance Show Object where
 class Typeable a => KeyType a where
   type ValType a :: *
 
--- | A Type synonym for a Method lens.
-type Method kt = Lens Object Object (Maybe (ValType kt)) (Maybe (ValType kt))
+-- | A Type synonym for a 'Member' 'Lens'.
+type Member kt = Lens Object Object (Maybe (ValType kt)) (Maybe (ValType kt))
 
--- | an empty @Object@ .
+-- | an empty 'Object' .
 --
 -- >>> empty
 -- Object []
 
-
 empty :: Object
 empty = Object $ Map.empty
 
-mkMethod :: forall kt. (KeyType kt, Typeable (ValType kt)) => kt -> Method kt
-mkMethod k1 = lens gettr settr
+
+-- | Given a key type, create a 'Member' 'Lens' labeled by the key.
+--   Here's an example of creating a price tag for objects.
+--
+-- >>> data Price = Price deriving (Show, Typeable)
+-- >>> instance KeyType Price where type ValType Price = Integer
+-- >>> let price :: Member Price; price = mkMember Price;
+-- >>> let x = set price (Just 120) empty
+-- >>> view price empty
+-- Nothing
+-- >>> view price x
+-- Just 120
+
+mkMember :: forall kt. (KeyType kt, Typeable (ValType kt)) => kt -> Member kt
+mkMember k1 = lens gettr settr
   where
     gettr :: Object -> Maybe (ValType kt)
     gettr (Object map0) = Map.lookup k map0 >>= fromDynamic
