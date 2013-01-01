@@ -3,7 +3,7 @@
 
 name:                dynamic-object
 version:             0.1.0.0
-synopsis:            Object-oriented programming with instance-specific methods
+synopsis:            Object-oriented programming with singleton methods
                      and duck typing.
 description:         This package provides Object-oriented programming 
                      found in dynamically-typed languages such as
@@ -12,6 +12,7 @@ description:         This package provides Object-oriented programming
                      @Object@ is implemented as @Map@ from method keys
                      to values. Different keys can have different value types
                      .
+                     
  
 license:             BSD3
 license-file:        LICENSE

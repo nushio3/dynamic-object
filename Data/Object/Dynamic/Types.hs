@@ -9,6 +9,8 @@ import qualified Data.Map as Map
 import           Data.Dynamic
 import           Control.Lens
 
+-- | A basic object type that can contain values of 
+--   different types.
 newtype Object = Object (Map.Map TypeRep Dynamic)
   deriving (Typeable)
 
@@ -18,7 +20,8 @@ instance Show Object where
 class Typeable a => KeyType a where
   type ValType a :: *
 
-type Record kt = Lens Object Object (Maybe (ValType kt)) (Maybe (ValType kt))
+-- | A Type synonym for a Method lens.
+type Method kt = Lens Object Object (Maybe (ValType kt)) (Maybe (ValType kt))
 
 -- | an empty @Object@ .
 --
@@ -29,8 +32,8 @@ type Record kt = Lens Object Object (Maybe (ValType kt)) (Maybe (ValType kt))
 empty :: Object
 empty = Object $ Map.empty
 
-mkRecord :: forall kt. (KeyType kt, Typeable (ValType kt)) => kt -> Record kt
-mkRecord k1 = lens gettr settr
+mkMethod :: forall kt. (KeyType kt, Typeable (ValType kt)) => kt -> Method kt
+mkMethod k1 = lens gettr settr
   where
     gettr :: Object -> Maybe (ValType kt)
     gettr (Object map0) = Map.lookup k map0 >>= fromDynamic
