@@ -3,8 +3,16 @@
 
 name:                dynamic-object
 version:             0.1.0.0
--- synopsis:            
--- description:         
+synopsis:            Object-oriented programming with instance-specific methods
+                     and duck typing.
+description:         This package provides Object-oriented programming 
+                     found in dynamically-typed languages such as
+                     python or ruby.
+                     .
+                     @Object@ is implemented as @Map@ from method keys
+                     to values. Different keys can have different value types
+                     .
+ 
 license:             BSD3
 license-file:        LICENSE
 author:              Takayuki Muranushi
@@ -17,6 +25,8 @@ cabal-version:       >=1.8
 library
   exposed-modules:     
     Data.Object.Dynamic
+    Data.Object.Dynamic.Types
+
   -- other-modules:       
   build-depends:       base >=4.5 && < 5
                      , containers >= 0.4

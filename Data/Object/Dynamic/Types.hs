@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE TypeFamilies #-}
-module Data.Object.Dynamic where
+module Data.Object.Dynamic.Types where
 
 import qualified Data.Map as Map
 import           Data.Dynamic
