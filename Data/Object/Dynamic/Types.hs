@@ -1,87 +1,68 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE TypeFamilies #-}
 module Data.Object.Dynamic.Types where
 
-import           Control.Applicative ((<|>))
+import           Control.Applicative ((<$>),pure)
+import qualified Control.Category as Cat ((.))
 import           Control.Lens
+import           Control.Lens.Iso
 import           Data.Dynamic
+import           Data.HList.FakePrelude
+import           Data.HList.HListPrelude
+import           Data.HList.Record
+import           Data.Ratio
 import qualified Data.Map as Map
 
+-- | The 'Object' type, where @u@ carrying the underlying types information.
+newtype Object u = Object {unObject :: Table}
+instance Objective (Object u) where
+  table = iso unObject Object
 
--- | A basic object type that can contain values of
---   different types.
-newtype Object = Object (Map.Map TypeRep Dynamic)
-  deriving (Typeable)
+-- | The 'Table' within an 'Object' that carries all the member data.
+newtype Table = Table {unTable :: Map.Map TypeRep Dynamic}
 
-instance Show Object where
-  show (Object x) = ("Object"++) $ drop 8 $ show x
+-- | @o@ is an 'Objective' if it's equivalent to the 'Table'
+--   given its type information.
+class Objective o where
+  table :: Simple Iso o Table
+  tableMap :: Simple Iso o (Map.Map TypeRep Dynamic)
+  tableMap = table Cat.. (iso unTable Table)
 
-class Typeable a => KeyType a where
-  type ValType a :: *
+-- |
+class (Objective o) => Member o memb where
+  type ValType o memb :: *
 
--- | A Type synonym for a 'Member' 'Lens'.
-type Member kt = Lens Object Object (Maybe (ValType kt)) (Maybe (ValType kt))
-
--- | an empty 'Object' .
---
--- >>> empty
--- Object []
-
-empty :: Object
-empty = Object $ Map.empty
+type MemberLens memb =
+  (Member o memb, Typeable (ValType o memb))
+        => Simple Traversal o (ValType o memb)
 
 
--- | Given a key type, create a 'Member' 'Lens' labeled by the key.
---   Here's an example of creating a price tag for objects.
---
--- >>> data Price = Price deriving (Show, Typeable)
--- >>> instance KeyType Price where type ValType Price = Integer
--- >>> let price :: Member Price; price = mkMember Price;
--- >>> let x = set price (Just 120) empty
--- >>> view price empty
--- Nothing
--- >>> view price x
--- Just 120
-
-mkMember :: forall kt. (KeyType kt, Typeable (ValType kt)) => kt -> Member kt
-mkMember k1 = lens gettr settr
+memberLens :: (Objective o, Member o memb,
+             Typeable memb, Typeable (ValType o memb))
+     => memb -> Simple Traversal o (ValType o memb)
+memberLens memb0 r2ar obj = case Map.lookup tag (unTable tbl) of
+  Just dr -> case fromDynamic dr of
+    Just r -> (\r' -> obj & over tableMap
+          (Map.insert tag (toDyn r')) ) <$> r2ar r
+    Nothing -> pure obj
+  Nothing -> pure obj
   where
-    gettr :: Object -> Maybe (ValType kt)
-    gettr (Object map0) = Map.lookup k map0 >>= fromDynamic
-    settr :: Object -> (Maybe (ValType kt)) -> Object
-    settr (Object map0) Nothing  = Object $ Map.delete k map0
-    settr (Object map0) (Just x) = Object $ Map.insert k (toDyn x) map0
-    k :: TypeRep
-    k = typeOf k1
+    tbl :: Table
+    tbl = obj ^. table
+    tag :: TypeRep
+    tag = typeOf memb0
 
+-- | Given a pair of member tag and an
 
--- | Create a 'Member' 'Lens' with a default value.
---   Here's a price tag for objects with default value.
---
--- >>> data Price = Price deriving (Show, Typeable)
--- >>> instance KeyType Price where type ValType Price = Integer
--- >>> let price :: Member Price; price = mkMemberWithDef Price 10;
--- >>> let x = set price (Just 120) empty
--- >>> view price empty
--- Just 10
--- >>> view price x
--- Just 120
-
-mkMemberWithDef ::
-  forall kt. (KeyType kt, Typeable (ValType kt)) =>
-  kt ->
-  ValType kt ->
-  Member kt
-mkMemberWithDef k1 v1 = lens gettr settr
+insert :: (Objective o, Member o memb, ValType o memb ~ val,
+           Typeable memb, Typeable val)
+  => memb -> val -> o -> o
+insert memb0 val0 = over tableMap $ Map.insert tag (toDyn val0)
   where
-    gettr :: Object -> Maybe (ValType kt)
-    gettr (Object map0) = (Map.lookup k map0 >>= fromDynamic)
-                           <|> Just v1
-    settr :: Object -> (Maybe (ValType kt)) -> Object
-    settr (Object map0) Nothing  = Object $ Map.delete k map0
-    settr (Object map0) (Just x) = Object $ Map.insert k (toDyn x) map0
-    k :: TypeRep
-    k = typeOf k1
+    tag :: TypeRep
+    tag = typeOf memb0
