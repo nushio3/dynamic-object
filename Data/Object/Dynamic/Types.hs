@@ -39,8 +39,6 @@ class (Objective o,Typeable memb, Typeable (ValType o memb)) => Member o memb wh
 -- | The lens for accessing the 'Member' of the 'Object'.
 type MemberLens o memb = (Member o memb) => Simple Traversal o (ValType o memb)
 
-
-
 -- | A utility function for creating a 'MemberLens' .
 memberLensDef ::
   (Member o memb)

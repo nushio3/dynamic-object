@@ -54,6 +54,7 @@ Test-Suite spec
   Other-Modules:        ObjectSpec
   Build-Depends:        base
                       , hspec >= 1.3
+                      , lens 
                       , QuickCheck
                       , dynamic-object
 
