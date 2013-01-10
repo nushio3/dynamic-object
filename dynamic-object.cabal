@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                dynamic-object
-version:             0.1.0.1
+version:             0.2
 synopsis:            Object-oriented programming with singleton methods
                      and duck typing.
 description:         This package provides Object-oriented programming 
@@ -24,11 +24,17 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  exposed-modules:     
-    Data.Object.Dynamic
-    Data.Object.Dynamic.Types
+  exposed-modules:    Data.Object.Dynamic
+                      Data.Object.Dynamic.Types
 
-  -- other-modules:       
+       
+                      
+                      
+                      
+                      
+                      
+                      
+
   build-depends:       base >=4.5 && < 5
                      , containers >= 0.4
                      , lens >= 3.7.1.2
