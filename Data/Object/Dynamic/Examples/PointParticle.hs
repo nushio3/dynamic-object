@@ -1,6 +1,7 @@
 -- | Here we use @dynamic-object@ to descibe the concept of point-like particles from
--- classical mechanics.
-
+-- classical mechanics. Also read the HSpec tests :
+-- <https://github.com/nushio3/dynamic-object/blob/master/test/ObjectSpec.hs>
+-- for more details.
 
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}

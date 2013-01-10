@@ -4,7 +4,7 @@
 name:                dynamic-object
 version:             0.2
 synopsis:            Object-oriented programming with duck typing and
-                     singleton class features.
+                     singleton classes.
 description:         
                      This package aims to combine the merit of Haskell's open, strong type system 
                      with flexible Object-oriented programming 
@@ -16,8 +16,9 @@ description:
                      You can add new members at runtime, for any instances of the object (singleton class).
                      At the same time, you have typed and runtime-error-free access to the members (duck typing).
                      .
-                     See 'Data.Object.Dynamic.Examples.PointParticle' for examples.
+                     See @Data.Object.Dynamic.Examples.PointParticle@ for examples.
  
+
 license:             BSD3
 license-file:        LICENSE
 author:              Takayuki Muranushi
