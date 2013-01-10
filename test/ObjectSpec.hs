@@ -109,7 +109,7 @@ spec = do
         velocity pure p      == (pure p :: Either () Particle) &&
         momentum pure p      == (pure p :: [Particle]) &&
         kineticEnergy pure p == (pure p :: ([Particle], Particle))
-    prop "satisfies the second law :  fmap (t f) . t g ≡ getCompose . t (Compose . fmap f . g)" $
+    prop "satisfies the second law : fmap (t f) . t g ≡ getCompose . t (Compose . fmap f . g)" $
       \f' g' m v ->
        let f :: Rational -> Maybe Rational
            g :: Rational -> [Rational]
@@ -123,4 +123,23 @@ spec = do
            p = fromMassVelocity m v
        in
            (fmap (mass f) . (mass g)) p ==
-           (getCompose . mass (Compose . fmap f . g) $ p)
+           (getCompose . mass (Compose . fmap f . g) $ p) &&
+           (fmap (kineticEnergy f) . (kineticEnergy g)) p ==
+           (getCompose . kineticEnergy (Compose . fmap f . g) $ p)
+    prop "satisfies the second law for vector members: fmap (t f) . t g ≡ getCompose . t (Compose . fmap f . g)" $
+      \f' g' m v ->
+       let f :: Vec Rational -> Maybe (Vec Rational)
+           g :: Vec Rational -> [Vec Rational]
+           f = fmap toRatio . Fun.apply f' . fromRatio
+           g = fmap toRatio . Fun.apply g' . fromRatio
+           fromRatio :: Vec Rational -> ((Integer, Integer), (Integer, Integer))
+           fromRatio (Vec (ax:%ay) (bx:%by)) = ((ax,ay), (bx,by))
+           toRatio :: ((Integer, Integer), (Integer, Integer)) -> Vec Rational
+           toRatio ((ax,ay), (bx,by)) = Vec (mk ax ay) (mk bx by)
+           mk x y = x % (if y == 0 then 1 else y)
+           p = fromMassVelocity m v
+       in
+           (fmap (velocity f) . (velocity g)) p ==
+           (getCompose . velocity (Compose . fmap f . g) $ p) &&
+           (fmap (momentum f) . (momentum g)) p ==
+           (getCompose . momentum (Compose . fmap f . g) $ p)
