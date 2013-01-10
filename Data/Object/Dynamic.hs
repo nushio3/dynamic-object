@@ -1,5 +1,5 @@
 module Data.Object.Dynamic 
-(Object, empty) where
+(Object, empty, insert, memberLens, memberLensDef) where
 
 import           Control.Lens
 import           Data.Object.Dynamic.Types

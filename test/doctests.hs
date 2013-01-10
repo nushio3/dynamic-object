@@ -4,13 +4,7 @@ import Test.DocTest
 
 main :: IO ()
 main = doctest 
-     [ "Data/Object/Dynamic/Types.hs"]
+     [ "-XTypeFamilies"           
+     , "Data/Object/Dynamic/Types.hs"
+     , "Data/Object/Dynamic/Presets.hs"]
 
-
----  "-XDeriveDataTypeable"     
----  "-XFlexibleContexts"       
----  "-XFlexibleInstances"      
----  "-XMultiParamTypeClasses"  
----  "-XRankNTypes"             
----  "-XScopedTypeVariables"    
----  "-XTypeFamilies"           

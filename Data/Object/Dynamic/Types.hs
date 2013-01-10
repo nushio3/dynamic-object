@@ -8,7 +8,7 @@
 
 module Data.Object.Dynamic.Types where
 
-import           Control.Applicative ((<$>),pure)
+import           Control.Applicative ((<$>),pure, (<|>))
 import qualified Control.Category as Cat ((.))
 import           Control.Lens
 import           Control.Lens.Iso
@@ -30,45 +30,51 @@ class Objective o where
   tableMap :: Simple Iso o (Map.Map TypeRep Dynamic)
   tableMap = table Cat.. (iso unTable Table)
 
--- | An instance of this type class declares that @memb@ is a member label
+-- | This means that @memb@ is one of the  member labels
 -- of @o@. The 'ValType' of the member depends both on the label
 -- and (the underlying types of) the object.
-class (Objective o) => Member o memb where
+class (Objective o,Typeable memb, Typeable (ValType o memb)) => Member o memb where
   type ValType o memb :: *
 
 -- | The lens for accessing the 'Member' of the 'Object'.
-type MemberLens memb =
-  (Member o memb, Typeable (ValType o memb))
-        => Simple Traversal o (ValType o memb)
+type MemberLens o memb = (Member o memb) => Simple Traversal o (ValType o memb)
 
 
--- | A utility function for creating a 'MemberLens'
+
+-- | A utility function for creating a 'MemberLens' .
 memberLensDef ::
-  (Objective o, Member o memb, Typeable memb, Typeable (ValType o memb))
-  => memb                               -- ^ member label
-  -> (o -> Maybe (ValType o memb))      -- ^ default result retrieval
-  -> Simple Traversal o (ValType o memb)-- ^ generated lens
+  (Member o memb)
+  => memb                          -- ^ member label
+  -> (o -> Maybe (ValType o memb)) -- ^ default value, in case
+                                   -- the member is not in the map
+  -> MemberLens o memb             -- ^ generated lens
 
-memberLensDef memb0 def0 r2ar obj =
-  case Map.lookup tag (unTable tbl) of
-    Just dr -> case fromDynamic dr of
-      Just r -> (\r' -> obj & over tableMap
-            (Map.insert tag (toDyn r')) ) <$> r2ar r
-      Nothing -> pure obj
+memberLensDef label0 def0 r2ar obj =
+  case (Map.lookup key (unTable tbl) >>= fromDynamic) <|> def0 obj of
+    Just r -> go r
     Nothing -> pure obj
   where
     tbl :: Table
     tbl = obj ^. table
-    tag :: TypeRep
-    tag = typeOf memb0
+    key :: TypeRep
+    key = typeOf label0
 
--- | Given a pair of 'Member' tag and a value, create the data field
+    go r = (\r' -> obj & over tableMap (Map.insert key (toDyn r')) )
+           <$> r2ar r
+
+-- | create a 'MemberLens' without any default values.
+
+memberLens :: (Member o memb) => memb -> MemberLens o memb
+memberLens label0 = memberLensDef label0 (const Nothing)
+
+
+-- | Given a pair of 'Member' label and a value, create the data field
 --  for the member and inserts the value.
 
 insert :: (Objective o, Member o memb, ValType o memb ~ val,
            Typeable memb, Typeable val)
   => memb -> val -> o -> o
-insert memb0 val0 = over tableMap $ Map.insert tag (toDyn val0)
+insert label0 val0 = over tableMap $ Map.insert tag (toDyn val0)
   where
     tag :: TypeRep
-    tag = typeOf memb0
+    tag = typeOf label0
