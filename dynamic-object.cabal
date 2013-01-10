@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                dynamic-object
-version:             0.2
+version:             0.2.0.1
 synopsis:            Object-oriented programming with duck typing and
                      singleton classes.
 description:         
@@ -69,5 +69,5 @@ Test-Suite spec
 
 Source-Repository head
   Type:                 git
-  Location:             https://github.com/nushio/dynamic-object
+  Location:             https://github.com/nushio3/dynamic-object
 
