@@ -53,9 +53,12 @@ Test-Suite spec
   Main-Is:              Spec.hs
   Other-Modules:        ObjectSpec
   Build-Depends:        base
+                      , ghc
                       , hspec >= 1.3
                       , lens 
+                      , transformers >= 0.3
                       , QuickCheck
+
                       , dynamic-object
 
 Source-Repository head

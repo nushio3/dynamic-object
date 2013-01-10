@@ -9,9 +9,12 @@ import Control.Applicative hiding (empty)
 import Control.Exception.Base
 import Control.Lens
 import Data.Dynamic
+import Data.Functor.Compose
+import GHC.Real
 import Test.Hspec
 import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck
+import Test.QuickCheck.Function as Fun
 
 import Data.Object.Dynamic
 import Data.Object.Dynamic.Types
@@ -100,9 +103,24 @@ spec = do
       in Just p0 == mp2
 
   describe "Traversal laws on objects" $ do
-    prop "satisfies the first law : t pure = pure" $ \m v ->
+    prop "satisfies the first law : t pure ≡ pure" $ \m v ->
       let p = fromMassVelocity m v in
         mass pure p          == (pure p :: Maybe Particle) &&
         velocity pure p      == (pure p :: Either () Particle) &&
         momentum pure p      == (pure p :: [Particle]) &&
         kineticEnergy pure p == (pure p :: ([Particle], Particle))
+    prop "satisfies the second law :  fmap (t f) . t g ≡ getCompose . t (Compose . fmap f . g)" $
+      \f' g' m v ->
+       let f :: Rational -> Maybe Rational
+           g :: Rational -> [Rational]
+           f = fmap toRatio . Fun.apply f' . fromRatio
+           g = fmap toRatio . Fun.apply g' . fromRatio
+           fromRatio :: Rational -> (Integer, Integer)
+           fromRatio (x:%y) = (x,y)
+           toRatio :: (Integer, Integer) -> Rational
+           toRatio (x,y) = x % (if y == 0 then 1 else y)
+
+           p = fromMassVelocity m v
+       in
+           (fmap (mass f) . (mass g)) p ==
+           (getCompose . mass (Compose . fmap f . g) $ p)
