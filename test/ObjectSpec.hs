@@ -90,6 +90,15 @@ spec = do
       print ((empty & insert Mass 42 :: Particle) ^? kineticEnergy == Nothing)
        `shouldThrow` stackOverflowException
 
+    prop "reproduces the particle from mass and velocity" $ \m v ->
+      (m > 0) ==>
+      let p0      :: Particle
+          mp1,mp2 :: Maybe Particle
+          p0 = fromMassVelocity m v
+          mp1 = fromMassMomentum <$> p0^?mass <*> p0^?momentum
+          mp2 = (\p1 -> fromMassVelocity <$> p1^?mass <*> p1^?velocity) =<< mp1
+      in Just p0 == mp2
+
   describe "Traversal laws on objects" $ do
     prop "satisfies the first law : t pure = pure" $ \m v ->
       let p = fromMassVelocity m v in
