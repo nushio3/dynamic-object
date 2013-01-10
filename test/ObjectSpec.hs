@@ -72,8 +72,8 @@ fromMassMomentum m v =
   empty & insert Mass m
         & insert Momentum v
 
-equiv :: Particle -> Particle -> Bool
-equiv x y = x ^? kineticEnergy ==  y ^? kineticEnergy
+instance Eq Particle where
+  x == y = x ^? kineticEnergy ==  y ^? kineticEnergy
 
 stackOverflowException :: Selector AsyncException
 stackOverflowException StackOverflow = True
@@ -89,3 +89,11 @@ spec = do
     it "enters infinite loop when neither velocity nor momentum is known" $
       print ((empty & insert Mass 42 :: Particle) ^? kineticEnergy == Nothing)
        `shouldThrow` stackOverflowException
+
+  describe "Traversal laws on objects" $ do
+    prop "satisfies the first law : t pure = pure" $ \m v ->
+      let p = fromMassVelocity m v in
+        mass pure p          == (pure p :: Maybe Particle) &&
+        velocity pure p      == (pure p :: Either () Particle) &&
+        momentum pure p      == (pure p :: [Particle]) &&
+        kineticEnergy pure p == (pure p :: ([Particle], Particle))
