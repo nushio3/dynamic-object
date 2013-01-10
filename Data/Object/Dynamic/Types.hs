@@ -30,8 +30,8 @@ class Objective o where
   tableMap :: Simple Iso o (Map.Map TypeRep Dynamic)
   tableMap = table Cat.. (iso unTable Table)
 
--- | An instance of this type class declares that @memb@ is a member key
--- of @o@. The 'ValType' of the member depends both on the key
+-- | An instance of this type class declares that @memb@ is a member label
+-- of @o@. The 'ValType' of the member depends both on the label
 -- and (the underlying types of) the object.
 class (Objective o) => Member o memb where
   type ValType o memb :: *
@@ -42,16 +42,20 @@ type MemberLens memb =
         => Simple Traversal o (ValType o memb)
 
 
--- | A utility function for creating a 'MemberLens' .
-memberLens :: (Objective o, Member o memb,
-             Typeable memb, Typeable (ValType o memb))
-     => memb -> Simple Traversal o (ValType o memb)
-memberLens memb0 r2ar obj = case Map.lookup tag (unTable tbl) of
-  Just dr -> case fromDynamic dr of
-    Just r -> (\r' -> obj & over tableMap
-          (Map.insert tag (toDyn r')) ) <$> r2ar r
+-- | A utility function for creating a 'MemberLens'
+memberLensDef ::
+  (Objective o, Member o memb, Typeable memb, Typeable (ValType o memb))
+  => memb                               -- ^ member label
+  -> (o -> Maybe (ValType o memb))      -- ^ default result retrieval
+  -> Simple Traversal o (ValType o memb)-- ^ generated lens
+
+memberLensDef memb0 def0 r2ar obj =
+  case Map.lookup tag (unTable tbl) of
+    Just dr -> case fromDynamic dr of
+      Just r -> (\r' -> obj & over tableMap
+            (Map.insert tag (toDyn r')) ) <$> r2ar r
+      Nothing -> pure obj
     Nothing -> pure obj
-  Nothing -> pure obj
   where
     tbl :: Table
     tbl = obj ^. table

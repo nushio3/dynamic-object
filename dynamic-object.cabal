@@ -14,7 +14,7 @@ description:
                      @Object@s are implemented as @Map@s from method keys
                      to values. Each key specifies its own value types.
                      You can add new members at runtime, for any instances of the object (singleton class).
-                     Yet, you have typed and runtime-error-free access to the members (duck typing).
+                     At the same time, you have typed and runtime-error-free access to the members (duck typing).
                      
  
 license:             BSD3
