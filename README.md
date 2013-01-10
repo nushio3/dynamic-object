@@ -7,7 +7,8 @@ object-oriented programming in Haskell, with duck typing and dynamic methods
 [![Build Status](https://travis-ci.org/nushio3/dynamic-object.png?branch=master)](https://travis-ci.org/nushio3/dynamic-object)
 
 
-- Comparison: Haskell's algebraic data types,  and dynamic object. 
+- Comparison: Haskell's algebraic data types, extensible Record from [HList](hackage.haskell.org/package/HList), and dynamic object. 
+
 
 
 　                               | data type     | HList.Record  |dynamic object
