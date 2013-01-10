@@ -32,7 +32,7 @@ instance UseReal DIT where type UnderlyingReal DIT = Double
 instance UseInteger DIT where type UnderlyingInteger DIT = Int
 instance UseString DIT where type UnderlyingString DIT = Text
 
--- | 'Object' 'Precise' uses 'Double' for real numbers, 'Int' for integers and 'Data.Text.Text' 
+-- | 'Object' 'Precise' uses 'Rational' for real numbers, 'Int' for integers and 'Data.Text.Text' 
 -- for strings.
 -- 
 -- >>> typechecks :: (UnderlyingReal (Object Precise) ~ Rational) => Bool
