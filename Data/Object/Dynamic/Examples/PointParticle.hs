@@ -86,7 +86,7 @@ momentum = memberLensDef Momentum $ \this -> do
   Vec vx vy <- this ^? velocity
   return $ Vec (m * vx) (m * vy)
 
--- | 'kineticEnergy' is defined in terms of 'mass' and 'velocity' .
+-- | 'kineticEnergy', unless given explicitly, is defined in terms of 'mass' and 'velocity' .
 kineticEnergy :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o KineticEnergy
 kineticEnergy = memberLensDef KineticEnergy $ \this -> do
   m         <- this ^? mass
