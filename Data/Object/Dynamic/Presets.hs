@@ -6,8 +6,6 @@
 module Data.Object.Dynamic.Presets (DIT, Precise) where
 
 import           Data.Text
-import           Data.Ratio
-
 import           Data.Object.Dynamic.Underlying
 
 

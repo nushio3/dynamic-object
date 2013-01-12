@@ -1,13 +1,16 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 module ObjectSpec where
 
 import Control.Applicative hiding (empty)
 import Control.Exception.Base
 import Control.Lens
+import Data.Dynamic
 import Data.Functor.Compose
 import GHC.Real (Ratio((:%)), (%))
 import Test.Hspec
@@ -16,10 +19,17 @@ import Test.QuickCheck
 import Test.QuickCheck.Function as Fun
 
 import Data.Object.Dynamic
-import Data.Object.Dynamic.Presets
 import Data.Object.Dynamic.Examples.PointParticle
+import Data.Object.Dynamic.Presets
+import Data.Object.Dynamic.Types
 
-type Particle = Object Precise
+
+
+newtype Particle = Particle (Object Precise)
+  deriving (Typeable, Objective)
+instance UseReal Particle where
+  type UnderlyingReal Particle = Rational
+
 
 instance Eq Particle where
   x == y = x ^? kineticEnergy ==  y ^? kineticEnergy

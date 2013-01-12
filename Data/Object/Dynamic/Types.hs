@@ -11,7 +11,6 @@ module Data.Object.Dynamic.Types where
 import           Control.Applicative ((<$>),pure, (<|>))
 import qualified Control.Category as Cat ((.))
 import           Control.Lens
-import           Control.Lens.Iso
 import           Data.Dynamic
 import qualified Data.Map as Map
 
