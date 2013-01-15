@@ -11,8 +11,10 @@ module Data.Object.Dynamic.Types where
 import           Control.Applicative ((<$>),pure, (<|>))
 import qualified Control.Category as Cat ((.))
 import           Control.Lens
+import qualified Control.Monad.RWS as RWS
 import           Data.Dynamic
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 -- | The 'Object' type, where @u@ carrying the information of its underlying types.
 newtype Object u = Object {unObject :: Table}
@@ -34,11 +36,15 @@ class Objective o where
 -- and (the underlying types of) the object.
 class (Objective o,Typeable memb, Typeable (ValType o memb)) => Member o memb where
   type ValType o memb :: *
+  memberLens :: MemberLens o memb
+  memberLens = undefined
+  memberThis :: This o (ValType o memb)
+  memberThis = undefined
 
 -- | The lens for accessing the 'Member' of the 'Object'.
 type MemberLens o memb = (Member o memb) => Simple Traversal o (ValType o memb)
 
--- | A utility function for creating a 'MemberLens' .
+-- | A utility function for defining a 'MemberLens' .
 mkMemberLensDef ::
   (Member o memb)
   => memb                          -- ^ member label
@@ -75,3 +81,7 @@ insert label0 val0 = over tableMap $ Map.insert tag (toDyn val0)
   where
     tag :: TypeRep
     tag = typeOf label0
+
+
+
+type This o a = RWS.RWST o () (Set.Set TypeRep) Maybe a
