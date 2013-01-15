@@ -59,6 +59,7 @@ Test-Suite spec
   Ghc-Options:          -Wall
   Main-Is:              Spec.hs
   Other-Modules:        ObjectSpec
+                        AcyclicSpec
   Build-Depends:        base
                       , ghc
                       , hspec >= 1.3
