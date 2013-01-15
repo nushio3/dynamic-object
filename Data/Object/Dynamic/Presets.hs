@@ -10,7 +10,7 @@ import           Data.Object.Dynamic.Underlying
 
 
 -- $setup
--- >>> import Data.Object.Dynamic.Types
+-- >>> import Data.Object.Dynamic.Type
 -- >>> let typechecks = True
 
 

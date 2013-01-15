@@ -21,5 +21,6 @@ runtime member addition          | ✖             | ✖             | ✔
 instance specific members        | ✖　           | ✖             | ✔ 
 different objects into one list  | ✖　           | ✖             | ✔ 
 missing member access            | runtime error | type error    | returns Nothing, or configurable default behavior
+loop in member definition        | stack overflow| stack overflow| detects loop and returns Nothing
 value level equality             | ✔ 　          | ✔             | ✖
 bijective de/serialization       | ✔ 　          | ✔             | ✖

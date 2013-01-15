@@ -10,6 +10,6 @@ main = doctest
      , "-XFlexibleInstances"           
      , "Data/Object/Dynamic/Examples/PointParticle.hs"
      , "Data/Object/Dynamic/Presets.hs"
-     , "Data/Object/Dynamic/Types.hs"
+     , "Data/Object/Dynamic/Type.hs"
      ]
 
