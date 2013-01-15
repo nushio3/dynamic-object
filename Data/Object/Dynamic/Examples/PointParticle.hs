@@ -77,6 +77,7 @@ instance (Objective o, UseReal o,Fractional (UnderlyingReal o)) => Member o Kine
   type ValType o KineticEnergy = UnderlyingReal o
   memberLookup k = mkMemberLookupDef k $ do
     m         <- this Mass
+    Vec _ _   <- this Velocity
     Vec vx vy <- this Velocity
     return $ ((m * vx * vx) + (m * vy * vy)) / 2
 

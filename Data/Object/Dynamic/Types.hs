@@ -97,7 +97,9 @@ mkMemberLookupDef label0 def0 = do
         -- invoke the default computation.
         False -> do
           RWS.put (key `Set.insert` usedKeys)
-          def0
+          ret <- def0
+          RWS.modify (Set.delete key)
+          return ret
 
 -- | Defining a 'MemberLookup', without default.
 mkMemberLookup ::
