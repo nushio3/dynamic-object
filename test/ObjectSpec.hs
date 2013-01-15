@@ -40,7 +40,7 @@ stackOverflowException _             = False
 
 spec :: Spec
 spec = do
-  describe "Point particle behavior as object" $ do
+  describe "Point particle library" $ do
     prop "calculates the energy from mass and velocity" $ \m v ->
       (fromMassVelocity m v :: Particle) ^? kineticEnergy /= Nothing
     prop "calculates the energy from mass and momentum" $ \m v ->
@@ -58,7 +58,7 @@ spec = do
           mp2 = (\p1 -> fromMassVelocity <$> p1^?mass <*> p1^?velocity) =<< mp1
       in Just p0 == mp2
 
-  describe "Traversal laws on objects" $ do
+  describe "Objects, as Traversal," $ do
     prop "satisfies the first law : t pure ≡ pure" $ \m v ->
       let p = fromMassVelocity m v in
         mass pure p          == (pure p :: Maybe Particle) &&
@@ -83,7 +83,7 @@ spec = do
            (getCompose . mass (Compose . fmap f . g) $ p) &&
            (fmap (kineticEnergy f) . (kineticEnergy g)) p ==
            (getCompose . kineticEnergy (Compose . fmap f . g) $ p)
-    prop "satisfies the second law for vector members: fmap (t f) . t g ≡ getCompose . t (Compose . fmap f . g)" $
+    prop "satisfies the second law for vector members, too" $
       \f' g' m v ->
        let f :: Vec Rational -> Maybe (Vec Rational)
            g :: Vec Rational -> [Vec Rational]
