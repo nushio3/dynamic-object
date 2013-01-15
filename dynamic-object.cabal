@@ -32,7 +32,7 @@ library
   exposed-modules:    Data.Object.Dynamic
                       Data.Object.Dynamic.Examples.PointParticle
                       Data.Object.Dynamic.Presets
-                      Data.Object.Dynamic.Types
+                      Data.Object.Dynamic.Type
                       Data.Object.Dynamic.Underlying
 
   Ghc-Options:        -Wall

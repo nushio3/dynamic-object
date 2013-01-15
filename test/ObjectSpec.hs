@@ -21,7 +21,7 @@ import Test.QuickCheck.Function as Fun
 import Data.Object.Dynamic
 import Data.Object.Dynamic.Examples.PointParticle
 import Data.Object.Dynamic.Presets
-import Data.Object.Dynamic.Types
+import Data.Object.Dynamic.Type
 
 
 

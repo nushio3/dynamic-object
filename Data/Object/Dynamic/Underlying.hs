@@ -4,7 +4,7 @@
 module Data.Object.Dynamic.Underlying where
 
 import           Data.Dynamic
-import           Data.Object.Dynamic.Types
+import           Data.Object.Dynamic.Type
 
 -- | The declaration of @instance@ 'Objective' @obj@ , @instance@ 'UseReal' @obj@ means
 -- that the @obj@ is an 'Object' and is ready to tell the 'Member's which type to use 

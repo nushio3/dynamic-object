@@ -7,7 +7,7 @@ module Data.Object.Dynamic
        ) where
 
 import           Control.Lens
-import           Data.Object.Dynamic.Types
+import           Data.Object.Dynamic.Type
 import           Data.Object.Dynamic.Underlying
 import qualified Data.Map as Map
 

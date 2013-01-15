@@ -26,7 +26,7 @@ import Data.String
 import Test.QuickCheck
 
 import Data.Object.Dynamic
-import Data.Object.Dynamic.Types
+import Data.Object.Dynamic.Type
 
 -- $setup
 -- >>> :set -XOverloadedStrings

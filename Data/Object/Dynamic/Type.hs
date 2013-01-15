@@ -6,7 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeFamilies           #-}
 
-module Data.Object.Dynamic.Types where
+module Data.Object.Dynamic.Type where
 
 import           Control.Applicative ((<$>),pure, (<|>))
 import qualified Control.Category as Cat ((.))
