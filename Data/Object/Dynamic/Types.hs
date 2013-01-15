@@ -21,8 +21,13 @@ newtype Object u = Object {unObject :: Table}
 instance Objective (Object u) where
   table = iso unObject Object
 
+
+
 -- | The 'Table' within an 'Object' that carries all the member data.
-newtype Table = Table {unTable :: Map.Map TypeRep Dynamic}
+newtype Table = Table {unTable :: TableMap}
+
+-- | The 'Map.Map' type within the table.
+type TableMap = Map.Map TypeRep Dynamic
 
 -- | @o@ is an 'Objective' if given its type information,
 -- there is an equivalence between @o@ and the 'Table'.
@@ -36,24 +41,23 @@ class Objective o where
 -- and (the underlying types of) the object.
 class (Objective o,Typeable memb, Typeable (ValType o memb)) => Member o memb where
   type ValType o memb :: *
-  memberLens :: MemberLens o memb
-  memberLens = undefined
-  memberThis :: This o (ValType o memb)
-  memberThis = undefined
+  memberLens :: memb -> MemberLens o memb
+  memberLens = mkMemberLens
+  memberLookup :: memb -> Lookup o (ValType o memb)
+  memberLookup = mkMemberLookup
 
 -- | The lens for accessing the 'Member' of the 'Object'.
 type MemberLens o memb = (Member o memb) => Simple Traversal o (ValType o memb)
 
--- | A utility function for defining a 'MemberLens' .
-mkMemberLensDef ::
-  (Member o memb)
-  => memb                          -- ^ member label
-  -> (o -> Maybe (ValType o memb)) -- ^ default value, in case
-                                   -- the member is not in the map
-  -> MemberLens o memb             -- ^ generated lens
 
-mkMemberLensDef label0 def0 r2ar obj =
-  case (Map.lookup key (unTable tbl) >>= fromDynamic) <|> def0 obj of
+-- | A utility function for defining a 'MemberLens' .
+mkMemberLens ::
+  (Member o memb)
+  => memb                    -- ^ member label
+  -> MemberLens o memb       -- ^ generated lens
+
+mkMemberLens label0 r2ar obj =
+  case fmap fst $ RWS.evalRWST (memberLookup label0) obj Set.empty of
     Just r -> go r
     Nothing -> pure obj
   where
@@ -65,10 +69,42 @@ mkMemberLensDef label0 def0 r2ar obj =
     go r = (\r' -> obj & over tableMap (Map.insert key (toDyn r')) )
            <$> r2ar r
 
--- | create a 'MemberLens' without any default values.
 
-mkMemberLens :: (Member o memb) => memb -> MemberLens o memb
-mkMemberLens label0 = mkMemberLensDef label0 (const Nothing)
+
+-- | A utility function for defining a 'MemberLookup', with a default computation
+-- for the case the member is missing.
+mkMemberLookupDef ::
+  (Member o memb)
+  => memb                    -- ^ member label
+  -> Lookup o (ValType o memb) -- ^ default accessor when the record is missing
+  -> Lookup o (ValType o memb) -- ^ member accessor
+
+mkMemberLookupDef label0 def0 = do
+  obj <- RWS.ask
+  let
+    tblMap :: TableMap
+    tblMap = obj ^. tableMap
+    key :: TypeRep
+    key = typeOf label0
+
+  case (Map.lookup key tblMap >>= fromDynamic) of
+    Just ret -> RWS.lift $ return ret
+    Nothing  -> do
+      usedKeys <- RWS.get
+      case key `Set.member` usedKeys of
+        -- loop detected, further search truncated.
+        True -> RWS.lift $ Nothing
+        -- invoke the default computation.
+        False -> do
+          RWS.put (key `Set.insert` usedKeys)
+          def0
+
+-- | Defining a 'MemberLookup', without default.
+mkMemberLookup ::
+  (Member o memb)
+  => memb                    -- ^ member label
+  -> Lookup o (ValType o memb) -- ^ member accessor
+mkMemberLookup label0 = mkMemberLookupDef label0 (RWS.lift Nothing)
 
 
 -- | Given a pair of 'Member' label and a value, create the data field
@@ -83,5 +119,9 @@ insert label0 val0 = over tableMap $ Map.insert tag (toDyn val0)
     tag = typeOf label0
 
 
+-- | Lookup monad is used to lookup a member of the object
+--   with infinite-loop detection.
+type Lookup o a = RWS.RWST o () (Set.Set TypeRep) Maybe a
 
-type This o a = RWS.RWST o () (Set.Set TypeRep) Maybe a
+this :: Member o memb => memb -> Lookup o (ValType o memb)
+this = memberLookup

@@ -8,6 +8,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Data.Object.Dynamic.Examples.PointParticle
        (Vec(..),
         Mass(..), Velocity(..), Momentum(..), KineticEnergy(..),
@@ -55,45 +56,48 @@ instance (Objective o, UseReal o) => Member o Mass where
 -- ask the object which real value it prefers, then put the response
 -- into the type constructors.
 data Velocity = Velocity deriving (Typeable)
-instance (Objective o, UseReal o) => Member o Velocity where
+instance (Objective o, UseReal o, Fractional (UnderlyingReal o)) => Member o Velocity where
   type ValType o Velocity = Vec (UnderlyingReal o)
-
+  memberLookup k = mkMemberLookupDef k $ do
+    m         <- this Mass
+    Vec mx my <- this Momentum
+    return $ Vec (mx/m) (my/m)
+                   
 data Momentum = Momentum deriving (Typeable)
-instance (Objective o, UseReal o) => Member o Momentum where
+instance (Objective o, UseReal o, Fractional (UnderlyingReal o)) => Member o Momentum where
   type ValType o Momentum = Vec (UnderlyingReal o)
+  memberLookup k = mkMemberLookupDef k $ do
+    m         <- this Mass
+    Vec vx vy <- this Velocity
+    return $ Vec (m * vx) (m * vy)
+  
 
 data KineticEnergy = KineticEnergy deriving (Typeable)
-instance (Objective o, UseReal o) => Member o KineticEnergy where
+instance (Objective o, UseReal o,Fractional (UnderlyingReal o)) => Member o KineticEnergy where
   type ValType o KineticEnergy = UnderlyingReal o
+  memberLookup k = mkMemberLookupDef k $ do
+    m         <- this Mass
+    Vec vx vy <- this Velocity
+    return $ ((m * vx * vx) + (m * vy * vy)) / 2
 
 -- | Now we define the accessors. Accessors for 'Member's without default methods are
 -- straightforward.
 mass :: MemberLens o Mass
-mass = mkMemberLens Mass
+mass = memberLens Mass
 
 -- | If the 'velocity' field is missing, we attempt to re-calculate it
 -- from the 'mass' and 'momentum'. Here is how we can do that.
 velocity :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o Velocity
-velocity = mkMemberLensDef Velocity $ \this -> do
-  m         <- this ^? mass
-  Vec mx my <- this ^? momentum
-  return $ Vec (mx/m) (my/m)
+velocity = memberLens Velocity
 
 -- | If the 'momentum' field is missing, we re-calculate it
 -- from the 'mass' and 'velocity'.
 momentum :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o Momentum
-momentum = mkMemberLensDef Momentum $ Reader.runReaderT $ do
-  this <- Reader.ask         
-  m         <- Reader.lift $ this ^? mass
-  Vec vx vy <- Reader.lift $ this ^? velocity
-  return $ Vec (m * vx) (m * vy)
+momentum = memberLens Momentum
 
 -- | 'kineticEnergy', unless given explicitly, is defined in terms of 'mass' and 'velocity' .
 kineticEnergy :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o KineticEnergy
-kineticEnergy = mkMemberLensDef KineticEnergy $ \this -> do
-  m         <- this ^? mass
-  Vec vx vy <- this ^? velocity
-  return $ ((m * vx * vx) + (m * vy * vy)) / 2
+kineticEnergy = memberLens KineticEnergy 
 
 -- | We can write functions that would construct a point particle from
 --   its mass and velocity. And we can make the function polymorphic over the

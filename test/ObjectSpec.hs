@@ -45,9 +45,9 @@ spec = do
       (fromMassVelocity m v :: Particle) ^? kineticEnergy /= Nothing
     prop "calculates the energy from mass and momentum" $ \m v ->
       (fromMassMomentum m v :: Particle) ^? kineticEnergy /= Nothing
-    it "enters infinite loop when neither velocity nor momentum is known" $
-      print ((empty & insert Mass 42 :: Particle) ^? kineticEnergy == Nothing)
-       `shouldThrow` stackOverflowException
+    it "avoids infinite loop even if neither velocity nor momentum is known" $
+      (empty & insert Mass 42 :: Particle) ^? kineticEnergy == Nothing
+
 
     prop "reproduces the particle from mass and velocity" $ \m v ->
       (m > 0) ==>
