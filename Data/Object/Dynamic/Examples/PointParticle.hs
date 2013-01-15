@@ -21,7 +21,6 @@ module Data.Object.Dynamic.Examples.PointParticle
 
 import Control.Applicative hiding (empty)
 import Control.Lens hiding (lens)
-import qualified Control.Monad.Reader as Reader
 import Data.Dynamic
 import Data.String
 import Test.QuickCheck
@@ -55,48 +54,47 @@ instance (Objective o, UseReal o) => Member o Mass where
 -- we use 'UnderlyingReal' to
 -- ask the object which real value it prefers, then put the response
 -- into the type constructors.
+--
+-- We also give a fallback accessor here. If the 'velocity' field is missing, we attempt to re-calculate it
+-- from the 'mass' and 'momentum'. Here is how we can do that.
+
 data Velocity = Velocity deriving (Typeable)
-instance (Objective o, UseReal o, Fractional (UnderlyingReal o)) => Member o Velocity where
+instance (Objective o, UseReal o,  Fractional (UnderlyingReal o)) => Member o Velocity where
   type ValType o Velocity = Vec (UnderlyingReal o)
-  memberLookup k = mkMemberLookupDef k $ do
-    m         <- this Mass
-    Vec mx my <- this Momentum
+  memberLookup = acyclically $ do  
+    m         <- its Mass
+    Vec mx my <- its Momentum
     return $ Vec (mx/m) (my/m)
                    
+-- | If the 'momentum' field is missing, we re-calculate it
+-- from the 'mass' and 'velocity'.
 data Momentum = Momentum deriving (Typeable)
-instance (Objective o, UseReal o, Fractional (UnderlyingReal o)) => Member o Momentum where
+instance (Objective o, UseReal o,  Fractional (UnderlyingReal o)) => Member o Momentum where
   type ValType o Momentum = Vec (UnderlyingReal o)
-  memberLookup k = mkMemberLookupDef k $ do
-    m         <- this Mass
-    Vec vx vy <- this Velocity
+  memberLookup = acyclically $ do
+    m         <- its Mass
+    Vec vx vy <- its Velocity
     return $ Vec (m * vx) (m * vy)
   
-
+-- | 'kineticEnergy', unless given explicitly, is defined in terms of 'mass' and 'velocity' .
 data KineticEnergy = KineticEnergy deriving (Typeable)
-instance (Objective o, UseReal o,Fractional (UnderlyingReal o)) => Member o KineticEnergy where
+instance (Objective o, UseReal o,  Fractional (UnderlyingReal o)) => Member o KineticEnergy where
   type ValType o KineticEnergy = UnderlyingReal o
-  memberLookup k = mkMemberLookupDef k $ do
-    m         <- this Mass
-    Vec _ _   <- this Velocity
-    Vec vx vy <- this Velocity
+  memberLookup = acyclically $ do
+    m         <- its Mass
+    Vec vx vy <- its Velocity
     return $ ((m * vx * vx) + (m * vy * vy)) / 2
 
--- | Now we define the accessors. Accessors for 'Member's without default methods are
--- straightforward.
+-- | Now we define the lenses.
 mass :: MemberLens o Mass
 mass = memberLens Mass
 
--- | If the 'velocity' field is missing, we attempt to re-calculate it
--- from the 'mass' and 'momentum'. Here is how we can do that.
-velocity :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o Velocity
+velocity :: MemberLens o Velocity
 velocity = memberLens Velocity
 
--- | If the 'momentum' field is missing, we re-calculate it
--- from the 'mass' and 'velocity'.
 momentum :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o Momentum
 momentum = memberLens Momentum
 
--- | 'kineticEnergy', unless given explicitly, is defined in terms of 'mass' and 'velocity' .
 kineticEnergy :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o KineticEnergy
 kineticEnergy = memberLens KineticEnergy 
 

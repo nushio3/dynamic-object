@@ -43,7 +43,7 @@ class (Objective o,Typeable memb, Typeable (ValType o memb)) => Member o memb wh
   type ValType o memb :: *
   memberLens :: memb -> MemberLens o memb
   memberLens = mkMemberLens
-  memberLookup :: memb -> Lookup o (ValType o memb)
+  memberLookup :: memb -> Acyclic o (ValType o memb)
   memberLookup = mkMemberLookup
 
 -- | The lens for accessing the 'Member' of the 'Object'.
@@ -75,9 +75,9 @@ mkMemberLens label0 r2ar obj =
 -- for the case the member is missing.
 mkMemberLookupDef ::
   (Member o memb)
-  => memb                    -- ^ member label
-  -> Lookup o (ValType o memb) -- ^ default accessor when the record is missing
-  -> Lookup o (ValType o memb) -- ^ member accessor
+  => memb                       -- ^ member label
+  -> Acyclic o (ValType o memb) -- ^ default accessor when the record is missing
+  -> Acyclic o (ValType o memb) -- ^ member accessor
 
 mkMemberLookupDef label0 def0 = do
   obj <- RWS.ask
@@ -105,7 +105,7 @@ mkMemberLookupDef label0 def0 = do
 mkMemberLookup ::
   (Member o memb)
   => memb                    -- ^ member label
-  -> Lookup o (ValType o memb) -- ^ member accessor
+  -> Acyclic o (ValType o memb) -- ^ member accessor
 mkMemberLookup label0 = mkMemberLookupDef label0 (RWS.lift Nothing)
 
 
@@ -121,9 +121,18 @@ insert label0 val0 = over tableMap $ Map.insert tag (toDyn val0)
     tag = typeOf label0
 
 
--- | Lookup monad is used to lookup a member of the object
+-- | Acyclic monad is used to lookup a member of the object
 --   with infinite-loop detection.
-type Lookup o a = RWS.RWST o () (Set.Set TypeRep) Maybe a
+type Acyclic o a = RWS.RWST o () (Set.Set TypeRep) Maybe a
 
-this :: Member o memb => memb -> Lookup o (ValType o memb)
-this = memberLookup
+-- a synonym for 'memberLookup'
+its :: Member o memb => memb -> Acyclic o (ValType o memb)
+its = memberLookup
+
+-- a synonym for 'mkMemberLookupDef' .
+acyclically :: 
+  (Member o memb)
+  => Acyclic o (ValType o memb) -- ^ default accessor when the record is missing
+  -> memb                       -- ^ member label
+  -> Acyclic o (ValType o memb) -- ^ member accessor
+acyclically = flip mkMemberLookupDef 
