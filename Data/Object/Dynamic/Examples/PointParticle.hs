@@ -20,6 +20,7 @@ module Data.Object.Dynamic.Examples.PointParticle
 
 import Control.Applicative hiding (empty)
 import Control.Lens hiding (lens)
+import qualified Control.Monad.Reader as Reader
 import Data.Dynamic
 import Data.String
 import Test.QuickCheck
@@ -81,9 +82,10 @@ velocity = memberLensDef Velocity $ \this -> do
 -- | If the 'momentum' field is missing, we re-calculate it
 -- from the 'mass' and 'velocity'.
 momentum :: (UseReal o, Fractional (UnderlyingReal o)) => MemberLens o Momentum
-momentum = memberLensDef Momentum $ \this -> do
-  m         <- this ^? mass
-  Vec vx vy <- this ^? velocity
+momentum = memberLensDef Momentum $ Reader.runReaderT $ do
+  this <- Reader.ask         
+  m         <- Reader.lift $ this ^? mass
+  Vec vx vy <- Reader.lift $ this ^? velocity
   return $ Vec (m * vx) (m * vy)
 
 -- | 'kineticEnergy', unless given explicitly, is defined in terms of 'mass' and 'velocity' .
