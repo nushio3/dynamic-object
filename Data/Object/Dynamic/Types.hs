@@ -39,14 +39,14 @@ class (Objective o,Typeable memb, Typeable (ValType o memb)) => Member o memb wh
 type MemberLens o memb = (Member o memb) => Simple Traversal o (ValType o memb)
 
 -- | A utility function for creating a 'MemberLens' .
-memberLensDef ::
+mkMemberLensDef ::
   (Member o memb)
   => memb                          -- ^ member label
   -> (o -> Maybe (ValType o memb)) -- ^ default value, in case
                                    -- the member is not in the map
   -> MemberLens o memb             -- ^ generated lens
 
-memberLensDef label0 def0 r2ar obj =
+mkMemberLensDef label0 def0 r2ar obj =
   case (Map.lookup key (unTable tbl) >>= fromDynamic) <|> def0 obj of
     Just r -> go r
     Nothing -> pure obj
@@ -61,8 +61,8 @@ memberLensDef label0 def0 r2ar obj =
 
 -- | create a 'MemberLens' without any default values.
 
-memberLens :: (Member o memb) => memb -> MemberLens o memb
-memberLens label0 = memberLensDef label0 (const Nothing)
+mkMemberLens :: (Member o memb) => memb -> MemberLens o memb
+mkMemberLens label0 = mkMemberLensDef label0 (const Nothing)
 
 
 -- | Given a pair of 'Member' label and a value, create the data field
