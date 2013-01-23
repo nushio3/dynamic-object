@@ -14,7 +14,6 @@ import Data.Object.Dynamic.Presets
 import Data.Object.Dynamic.Type
 import Test.Hspec
 import Test.Hspec.QuickCheck (prop)
-import Test.QuickCheck
 
 
 data A = A deriving Typeable
@@ -24,24 +23,24 @@ data D = D deriving Typeable
 data E = E deriving Typeable
 
 
-instance (Objective o) => Member o A where 
+instance (Objective o) => Member o A where
   type ValType o A = Integer
   memberLookup = acyclically $ do
     e <- its E
     return $ 1+e
 
-instance (Objective o) => Member o B where 
+instance (Objective o) => Member o B where
   type ValType o B = Integer
   memberLookup = acyclically $ do
     a <- its A
     return $ 1+a
-instance (Objective o) => Member o C where 
+instance (Objective o) => Member o C where
   type ValType o C = Integer
   memberLookup = acyclically $ do
     a <- its A
     b <- its B
     return $ 1+a+b
-instance (Objective o) => Member o D where 
+instance (Objective o) => Member o D where
   type ValType o D = Integer
   memberLookup = acyclically $ do
     a <- its A
@@ -50,7 +49,7 @@ instance (Objective o) => Member o D where
     a' <- its A
     b' <- its B
     return $ 1+a+b+c+a'+b'
-instance (Objective o) => Member o E where 
+instance (Objective o) => Member o E where
   type ValType o E = Integer
   memberLookup = acyclically $ do
     a <- its A
@@ -68,8 +67,8 @@ spec = describe "Complicated Object" $ do
     obj0 ^? memberLens E == Nothing
   it "fallbacks correctly even if it is complicated." $ do
     insert A 1 obj0 ^? memberLens E `shouldBe` Just 19
-  prop "does not fail for any possible combination of members" $ 
-    \sw0 -> 
+  prop "does not fail for any possible combination of members" $
+    \sw0 ->
       let sw1 :: [Bool]
           sw1 = sw0 ++ repeat False
           sw i f = if sw1!!i then f else id

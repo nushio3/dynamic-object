@@ -8,7 +8,7 @@
 
 module Data.Object.Dynamic.Type where
 
-import           Control.Applicative ((<$>),pure, (<|>))
+import           Control.Applicative ((<$>),pure)
 import qualified Control.Category as Cat ((.))
 import           Control.Lens
 import qualified Control.Monad.RWS as RWS
@@ -130,9 +130,9 @@ its :: Member o memb => memb -> Acyclic o (ValType o memb)
 its = memberLookup
 
 -- a synonym for 'mkMemberLookupDef' .
-acyclically :: 
+acyclically ::
   (Member o memb)
   => Acyclic o (ValType o memb) -- ^ default accessor when the record is missing
   -> memb                       -- ^ member label
   -> Acyclic o (ValType o memb) -- ^ member accessor
-acyclically = flip mkMemberLookupDef 
+acyclically = flip mkMemberLookupDef
