@@ -51,7 +51,7 @@ Test-Suite doctest
   Ghc-Options:          -threaded -Wall
   Main-Is:              doctests.hs
   Build-Depends:        base
-                      , directory >= 1.2
+                      , directory >= 1.1
                       , doctest >= 0.9.3
                       , filepath >= 1.3
 
