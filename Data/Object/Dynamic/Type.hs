@@ -125,11 +125,11 @@ insert label0 val0 = over tableMap $ Map.insert tag (toDyn val0)
 --   with infinite-loop detection.
 type Acyclic o a = RWS.RWST o () (Set.Set TypeRep) Maybe a
 
--- a synonym for 'memberLookup'
+-- | a synonym for 'memberLookup'
 its :: Member o memb => memb -> Acyclic o (ValType o memb)
 its = memberLookup
 
--- a synonym for 'mkMemberLookupDef' .
+-- | a synonym for 'mkMemberLookupDef' .
 acyclically ::
   (Member o memb)
   => Acyclic o (ValType o memb) -- ^ default accessor when the record is missing
